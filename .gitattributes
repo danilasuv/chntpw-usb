@@ -1,0 +1,8 @@
+* text=auto
+*.sh text eol=lf
+auto/config text eol=lf
+config/includes.chroot/usr/local/bin/* text eol=lf
+config/includes.chroot/usr/local/sbin/* text eol=lf
+config/includes.chroot/etc/xdg/openbox/* text eol=lf
+config/includes.chroot/etc/lightdm/lightdm.conf.d/* text eol=lf
+*.png binary

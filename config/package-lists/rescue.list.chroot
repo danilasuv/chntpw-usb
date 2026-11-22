@@ -1,0 +1,15 @@
+chntpw
+ntfs-3g
+sudo
+user-setup
+util-linux
+locales
+console-setup
+kbd
+xorg
+openbox
+lightdm
+lightdm-gtk-greeter
+python3-tk
+python3-hivex
+fonts-dejavu-core

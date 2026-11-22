@@ -1,0 +1,86 @@
+#!/bin/bash
+set -u
+export LC_ALL=C
+mode=${1:-general}
+if [ "$mode" != general ] && [ "$mode" != promote ]; then
+  echo 'Usage: rescue-menu [promote]' >&2
+  exit 2
+fi
+
+mountpoint=/mnt/windows-rescue
+mounted=0
+cleanup() {
+  if [ "$mounted" -eq 1 ]; then
+    sync
+    umount "$mountpoint" || echo 'Unmount failed; do not power off yet.' >&2
+  fi
+}
+trap cleanup EXIT INT TERM
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo 'Run: sudo rescue-menu' >&2
+  exit 1
+fi
+mkdir -p "$mountpoint"
+
+echo 'NTFS partitions:'
+lsblk -rpn -o NAME,SIZE,FSTYPE,LABEL | awk '$3 == "ntfs" {print}'
+read -r -p 'Enter exact device path (for example /dev/sda3), or blank to quit: ' device
+[ -n "$device" ] || exit 0
+if ! lsblk -rpn -o NAME,FSTYPE | awk '$2 == "ntfs" {print $1}' | grep -Fxq -- "$device"; then
+  echo 'This device is not a listed NTFS partition.' >&2
+  exit 1
+fi
+if findmnt -rn -S "$device" >/dev/null; then
+  echo 'Partition is already mounted. Unmount it first.' >&2
+  exit 1
+fi
+
+ntfs-3g -o ro "$device" "$mountpoint" || exit 1
+mounted=1
+config_dir="$mountpoint/Windows/System32/config"
+if [ ! -f "$config_dir/SAM" ]; then
+  echo 'Windows SAM not found on this partition.' >&2
+  exit 1
+fi
+echo "Found: $config_dir/SAM"
+echo 'This tool edits local Windows accounts. BitLocker volumes must be unlocked separately.'
+read -r -p 'Type YES to mount read/write, back up SAM, and launch chntpw: ' answer
+[ "$answer" = YES ] || exit 0
+umount "$mountpoint" || exit 1
+mounted=0
+
+# ntfs-3g refuses unsafe read/write mounts, including hibernated Windows.
+ntfs-3g -o rw "$device" "$mountpoint" || exit 1
+mounted=1
+[ -f "$config_dir/SAM" ] || { echo 'SAM disappeared after remount.' >&2; exit 1; }
+backup_dir="$config_dir/chntpw-backup-$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -- "$backup_dir" || exit 1
+cp -p -- "$config_dir/SAM" "$backup_dir/SAM" || exit 1
+for hive in SYSTEM SECURITY; do
+  if [ -f "$config_dir/$hive" ]; then
+    cp -p -- "$config_dir/$hive" "$backup_dir/$hive" || exit 1
+  fi
+done
+sync
+echo "Backup on Windows partition: $backup_dir"
+echo 'chntpw will ask separately whether to save changes. Read its prompts carefully.'
+cd "$config_dir" || exit 1
+if [ "$mode" = promote ]; then
+  echo 'Local users (select by RID shown in the first column):'
+  chntpw -l SAM || exit 1
+  read -r -p 'Enter the chosen user RID in hexadecimal (for example 03e9): ' rid
+  if [[ ! "$rid" =~ ^[[:xdigit:]]{1,8}$ ]]; then
+    echo 'Invalid RID.' >&2
+    exit 1
+  fi
+  echo 'In the user menu select 3 (Promote user), then q and confirm saving with y.'
+  chntpw -u "0x$rid" SAM
+else
+  chntpw -i SAM
+fi
+result=$?
+sync
+echo "chntpw exit code: $result"
+echo "Backup: $backup_dir"
+exit "$result"

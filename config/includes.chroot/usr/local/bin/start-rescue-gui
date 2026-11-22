@@ -1,0 +1,2 @@
+#!/bin/sh
+exec sudo -n env DISPLAY="${DISPLAY:-:0}" XAUTHORITY="${XAUTHORITY:-/home/user/.Xauthority}" /usr/bin/python3 /usr/local/sbin/rescue-gui

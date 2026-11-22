@@ -1,0 +1,21 @@
+# Generated Debian Live build files
+/.build/
+/binary*/
+/cache/
+/chroot*/
+/live-image-*.iso
+/live-image-*.iso.sha256
+/build-vm/
+
+# Local tools, recovery data, and USB writer
+/.tools/
+/repair/
+/Rufus/
+/rufus*.exe
+/rufus.ini
+
+# Editor and Python cache
+/.vscode/
+/__pycache__/
+*.pyc
+*.log
