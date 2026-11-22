@@ -2,13 +2,13 @@
 
 Debian 13 (trixie) Live ISO for working with local Windows accounts using `chntpw` and `ntfs-3g`. Lightweight Openbox desktop, amd64, hybrid ISO for USB with BIOS and UEFI bootloaders. Secure Boot support depends on availability of Debian signed boot packages during the build and must be checked on the target machine.
 
-Этот репозиторий содержит исходники и инструкции. Готовый ISO и Rufus в Git не загружаются; для пересборки ISO нужны Debian 13, пакеты из раздела **Build** и доступ к пакетам Debian.
+Этот репозиторий содержит исходники и инструкции. Готовый ISO доступен во вкладке [Releases](https://github.com/danilasuv/chntpw-usb/releases), поскольку GitHub не допускает образ такого размера в обычном Git. Rufus в репозиторий не входит. Для пересборки ISO нужны Debian 13, пакеты из раздела **Build** и доступ к пакетам Debian.
 
 **Образ пересобран 20.11.2026:** в нём исправлена функция закрепления обоев, которая раньше могла сбрасывать параметры рабочего стола и шрифтов Windows. Также добавлена настройка LightDM `logind-check-graphical=false`, проверенная на компьютере пользователя. Старая флэшка сохраняет прежний образ до повторной записи ISO.
 
 ## Быстрый запуск
 
-1. В Rufus выберите флэшку **Generic Flash Disk (16 ГБ)** и файл `live-image-amd64.hybrid.iso`. При запросе режима записи выберите **DD**. Содержимое флэшки будет стёрто.
+1. Скачайте `live-image-amd64.hybrid.iso` и файл `.sha256` из [последнего релиза](https://github.com/danilasuv/chntpw-usb/releases/latest). Проверьте контрольную сумму ISO. В Rufus выберите нужную флэшку и этот ISO. При запросе режима записи выберите **DD**. Содержимое флэшки будет стёрто.
 2. Загрузитесь с флэшки. Окно **Windows Rescue** откроется автоматически. Выберите раздел NTFS и нажмите **Найти пользователей**.
 3. Для выдачи или снятия прав администратора, разблокировки и очистки пароля выберите запись по имени и RID и нажмите нужную кнопку.
 4. Для нового пароля, создания пользователя и обоев нажмите **Подготовить помощник Windows**. Затем загрузите Windows, войдите с правами администратора и откройте папку **Windows Rescue** на общем рабочем столе. Дважды щёлкните `Start-Windows-Rescue.cmd` и выберите действие кнопкой. Обои закрепляются для всех текущих профилей и шаблона новых пользователей.
