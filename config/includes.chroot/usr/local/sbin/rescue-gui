@@ -166,8 +166,8 @@ class RescueGUI:
     def __init__(self, root):
         self.root = root
         self.root.title('Windows Rescue')
-        self.root.geometry('1080x760')
-        self.root.minsize(900, 670)
+        self.root.geometry('1060x690')
+        self.root.minsize(900, 620)
         self.root.configure(bg='#0b1422')
         self.device = None
         self.accounts = {}
@@ -200,7 +200,7 @@ class RescueGUI:
                             font=('Cantarell', 10, 'bold'))
             style.map(f'{name}.TButton', background=[('active', '#3d7280')])
 
-        header = tk.Frame(root, bg='#102035', padx=24, pady=18)
+        header = tk.Frame(root, bg='#102035', padx=24, pady=12)
         header.pack(fill='x')
         tk.Label(header, text='✦', bg='#102035', fg=accent,
                  font=('DejaVu Sans', 26, 'bold')).pack(side='left', padx=(0, 15))
@@ -215,21 +215,21 @@ class RescueGUI:
         tk.Frame(root, bg=accent, height=3).pack(fill='x')
 
         book = ttk.Notebook(root, style='Rescue.TNotebook')
-        book.pack(fill='both', expand=True, padx=22, pady=(18, 8))
+        book.pack(fill='both', expand=True, padx=22, pady=(12, 6))
         main = tk.Frame(book, bg=bg)
         debug = tk.Frame(book, bg=bg)
         book.add(main, text='  ВОССТАНОВЛЕНИЕ  ')
         book.add(debug, text='  ДИАГНОСТИКА  ')
 
         disk_card = tk.Frame(main, bg=surface, highlightbackground=border,
-                             highlightthickness=1, padx=18, pady=14)
-        disk_card.pack(fill='x', pady=(0, 12))
+                             highlightthickness=1, padx=18, pady=10)
+        disk_card.pack(fill='x', pady=(0, 8))
         tk.Label(disk_card, text='01   РАЗДЕЛ WINDOWS', bg=surface, fg=accent,
                  font=('Cantarell', 12, 'bold')).pack(anchor='w')
         tk.Label(disk_card, text='Выберите NTFS-раздел с установленной Windows.',
                  bg=surface, fg=muted, font=('Cantarell', 10)).pack(anchor='w', pady=(2, 7))
         self.disks = ttk.Treeview(disk_card, columns=('size', 'label'),
-                                  show='tree headings', height=3,
+                                  show='tree headings', height=2,
                                   style='Rescue.Treeview')
         self.disks.heading('#0', text='Раздел')
         self.disks.heading('size', text='Размер')
@@ -239,21 +239,21 @@ class RescueGUI:
         self.disks.pack(fill='x', pady=6)
         self.disks.bind('<<TreeviewSelect>>', self.choose_device)
         row = tk.Frame(disk_card, bg=surface)
-        row.pack(fill='x', pady=(7, 0))
+        row.pack(fill='x', pady=(4, 0))
         ttk.Button(row, text='Обновить диски', style='Ghost.TButton',
                    command=self.refresh_disks).pack(side='left')
         ttk.Button(row, text='Найти пользователей', style='Accent.TButton',
                    command=self.load_users).pack(side='left', padx=9)
 
         user_card = tk.Frame(main, bg=surface, highlightbackground=border,
-                             highlightthickness=1, padx=18, pady=14)
-        user_card.pack(fill='both', expand=True, pady=(0, 12))
+                             highlightthickness=1, padx=18, pady=10)
+        user_card.pack(fill='both', expand=True, pady=(0, 8))
         tk.Label(user_card, text='02   УЧЁТНЫЕ ЗАПИСИ', bg=surface, fg=accent,
                  font=('Cantarell', 12, 'bold')).pack(anchor='w')
         tk.Label(user_card, text='Проверяйте имя и RID перед любым изменением.',
                  bg=surface, fg=muted, font=('Cantarell', 10)).pack(anchor='w', pady=(2, 7))
         self.users = ttk.Treeview(user_card, columns=('name', 'admin'),
-                                  show='tree headings', height=5,
+                                  show='tree headings', height=3,
                                   style='Rescue.Treeview')
         self.users.heading('#0', text='RID')
         self.users.heading('name', text='Имя в SAM')
@@ -263,7 +263,7 @@ class RescueGUI:
         self.users.column('admin', width=160, stretch=False)
         self.users.pack(fill='both', expand=True, pady=6)
         actions = tk.Frame(user_card, bg=surface)
-        actions.pack(fill='x', pady=(9, 0))
+        actions.pack(fill='x', pady=(5, 0))
         ttk.Button(actions, text='Сделать администратором',
                    style='Accent.TButton', command=lambda: self.change('promote')).pack(side='left')
         ttk.Button(actions, text='Разблокировать',
@@ -273,7 +273,7 @@ class RescueGUI:
         ttk.Button(actions, text='Снять права администратора',
                    style='Danger.TButton', command=lambda: self.change('demote')).pack(side='left', padx=7)
         windows_actions = tk.Frame(main, bg=surface, highlightbackground=border,
-                                    highlightthickness=1, padx=18, pady=12)
+                                    highlightthickness=1, padx=18, pady=9)
         windows_actions.pack(fill='x')
         ttk.Button(windows_actions, text='Подготовить помощник Windows',
                    style='Ghost.TButton', command=self.prepare_windows_helper).pack(side='left')
@@ -299,7 +299,7 @@ class RescueGUI:
         ttk.Button(debug_buttons, text='Сохранить отчёт…', style='Accent.TButton',
                    command=self.export_log).pack(side='left', padx=9)
 
-        footer = tk.Frame(root, bg='#102035', padx=24, pady=11)
+        footer = tk.Frame(root, bg='#102035', padx=24, pady=7)
         footer.pack(fill='x')
         tk.Label(footer, text='●', bg='#102035', fg=accent,
                  font=('Cantarell', 11)).pack(side='left')
