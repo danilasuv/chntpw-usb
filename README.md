@@ -2,9 +2,11 @@
 
 Debian 13 (trixie) Live ISO for working with local Windows accounts using `chntpw` and `ntfs-3g`. GNOME desktop with a dark Windows Rescue interface; Openbox remains available as a fallback session. The amd64 hybrid ISO supports BIOS and UEFI bootloaders. Secure Boot support depends on availability of Debian signed boot packages during the build and must be checked on the target machine.
 
+![Windows Rescue on GNOME](gui-preview.png)
+
 Этот репозиторий содержит исходники и инструкции. Готовый ISO доступен во вкладке [Releases](https://github.com/danilasuv/chntpw-usb/releases), поскольку GitHub не допускает образ такого размера в обычном Git. Rufus в репозиторий не входит. Для пересборки ISO нужны Debian 13, пакеты из раздела **Build** и доступ к пакетам Debian.
 
-**Образ v1.0.0 от 20.11.2026** использует Openbox. В исходниках после этого релиза GNOME назначен основным рабочим столом; новую версию ISO нужно собрать и проверить перед записью на флэшку. Исправление LightDM `logind-check-graphical=false` сохранено.
+**Образ v1.0.0 от 20.11.2026** использует Openbox. Начиная с v1.1.0 по умолчанию запускается GNOME с оформленным окном Windows Rescue. Исправление LightDM `logind-check-graphical=false` сохранено.
 
 ## Быстрый запуск
 
@@ -12,7 +14,7 @@ Debian 13 (trixie) Live ISO for working with local Windows accounts using `chntp
 2. Загрузитесь с флэшки. Окно **Windows Rescue** откроется автоматически. Выберите раздел NTFS и нажмите **Найти пользователей**.
 3. Для выдачи или снятия прав администратора, разблокировки и очистки пароля выберите запись по имени и RID и нажмите нужную кнопку.
 4. Для нового пароля, создания пользователя и обоев нажмите **Подготовить помощник Windows**. Затем загрузите Windows, войдите с правами администратора и откройте папку **Windows Rescue** на общем рабочем столе. Дважды щёлкните `Start-Windows-Rescue.cmd` и выберите действие кнопкой. Обои закрепляются для всех текущих профилей и шаблона новых пользователей.
-5. При ошибке откройте вкладку **Дебаг** и сохраните отчёт до выключения Live-системы.
+5. При ошибке откройте вкладку **Диагностика** и сохраните отчёт до выключения Live-системы.
 
 После записи в режиме **DD** в Проводнике Windows появится отдельный раздел **WALLPAPERS** объёмом 500 МБ. В него можно копировать изображения PNG, JPG, JPEG и BMP. В помощнике Windows кнопка **«Закрепить обои всем»** откроет выбор файла с этого раздела; изначально там лежит присланное фото `wallpaper.png`. Если раздел не получил букву диска, откройте его в «Управлении дисками» и назначьте букву.
 
@@ -30,7 +32,7 @@ For a new password, a new local user, or wallpaper, click **Подготовит
 
 Debian's packaged `chntpw` cannot reliably set a chosen new password and does not create a Windows account. Those operations run through Windows' own local-account APIs in the companion interface after booting Windows with administrator rights. The companion has its own **Дебаг** tab and log under `C:\ProgramData\WindowsRescue\rescue.log`; it never logs entered passwords.
 
-The **Дебаг** tab shows disk discovery, tool output, errors, account listing, and backup paths. The log is stored in RAM at `/run/rescue-gui/session.log` and disappears on shutdown unless you click **Сохранить отчёт…** and select a writable location. Review the exported report before sharing it; it can contain disk labels and account names. It does not intentionally log password hashes or copy the SAM into the report.
+The **Диагностика** tab shows disk discovery, tool output, errors, account listing, and backup paths. The log is stored in RAM at `/run/rescue-gui/session.log` and disappears on shutdown unless you click **Сохранить отчёт…** and select a writable location. Review the exported report before sharing it; it can contain disk labels and account names. It does not intentionally log password hashes or copy the SAM into the report.
 
 The console is still available for recovery if the desktop fails:
 
