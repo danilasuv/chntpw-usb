@@ -215,10 +215,24 @@ class RescueGUI:
         tk.Frame(root, bg=accent, height=3).pack(fill='x')
 
         book = ttk.Notebook(root, style='Rescue.TNotebook')
-        book.pack(fill='both', expand=True, padx=22, pady=(12, 6))
-        main = tk.Frame(book, bg=bg)
+        main_host = tk.Frame(book, bg=bg)
+        canvas = tk.Canvas(main_host, bg=bg, highlightthickness=0)
+        scrollbar = tk.Scrollbar(main_host, orient='vertical', command=canvas.yview,
+                                 bg='#29435d', troughcolor=bg, activebackground=accent)
+        main = tk.Frame(canvas, bg=bg)
+        main_window = canvas.create_window((0, 0), window=main, anchor='nw')
+        main.bind('<Configure>', lambda _event: canvas.configure(scrollregion=canvas.bbox('all')))
+        canvas.bind('<Configure>', lambda event: canvas.itemconfigure(main_window, width=event.width))
+        canvas.configure(yscrollcommand=scrollbar.set)
+        def scroll_main(event):
+            if book.index('current') == 0:
+                canvas.yview_scroll(-1 if event.num == 4 else 1, 'units')
+        root.bind_all('<Button-4>', scroll_main)
+        root.bind_all('<Button-5>', scroll_main)
+        scrollbar.pack(side='right', fill='y')
+        canvas.pack(side='left', fill='both', expand=True)
         debug = tk.Frame(book, bg=bg)
-        book.add(main, text='  ВОССТАНОВЛЕНИЕ  ')
+        book.add(main_host, text='  ВОССТАНОВЛЕНИЕ  ')
         book.add(debug, text='  ДИАГНОСТИКА  ')
 
         disk_card = tk.Frame(main, bg=surface, highlightbackground=border,
@@ -300,13 +314,14 @@ class RescueGUI:
                    command=self.export_log).pack(side='left', padx=9)
 
         footer = tk.Frame(root, bg='#102035', padx=24, pady=7)
-        footer.pack(fill='x')
+        footer.pack(side='bottom', fill='x')
         tk.Label(footer, text='●', bg='#102035', fg=accent,
                  font=('Cantarell', 11)).pack(side='left')
         tk.Label(footer, textvariable=self.status, bg='#102035', fg=text,
                  wraplength=790, font=('Cantarell', 10)).pack(side='left', padx=8)
         tk.Label(footer, text='Локальные записи  •  BitLocker разблокируется отдельно',
                  bg='#102035', fg=muted, font=('Cantarell', 9)).pack(side='right')
+        book.pack(fill='both', expand=True, padx=22, pady=(12, 6))
         self.refresh_disks()
 
     def task(self, label, work, done=None):
