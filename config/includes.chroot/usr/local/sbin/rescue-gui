@@ -165,71 +165,148 @@ def make_backup(config):
 class RescueGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title('Windows Rescue — chntpw / NTFS')
-        self.root.geometry('900x650')
-        self.root.minsize(750, 560)
+        self.root.title('Windows Rescue')
+        self.root.geometry('1080x760')
+        self.root.minsize(900, 670)
+        self.root.configure(bg='#0b1422')
         self.device = None
         self.accounts = {}
         self.busy = False
         self.status = tk.StringVar(value='Выберите раздел Windows.')
-        book = ttk.Notebook(root)
-        book.pack(fill='both', expand=True, padx=12, pady=12)
-        main = ttk.Frame(book, padding=12)
-        debug = ttk.Frame(book, padding=12)
-        book.add(main, text='Восстановление')
-        book.add(debug, text='Дебаг')
+        bg, surface, border = '#0b1422', '#132338', '#28405a'
+        text, muted, accent = '#f1f7ff', '#a9bfd2', '#66e1c6'
+        style = ttk.Style(root)
+        if 'clam' in style.theme_names():
+            style.theme_use('clam')
+        style.configure('Rescue.TNotebook', background=bg, borderwidth=0)
+        style.configure('Rescue.TNotebook.Tab', background='#172940', foreground=muted,
+                        padding=(22, 12), font=('Cantarell', 11, 'bold'), borderwidth=0)
+        style.map('Rescue.TNotebook.Tab', background=[('selected', surface)],
+                  foreground=[('selected', accent)])
+        style.configure('Rescue.Treeview', background=surface, fieldbackground=surface,
+                        foreground=text, rowheight=30, borderwidth=0,
+                        font=('Cantarell', 10))
+        style.map('Rescue.Treeview', background=[('selected', '#255e75')],
+                  foreground=[('selected', '#ffffff')])
+        style.configure('Rescue.Treeview.Heading', background='#1e3650',
+                        foreground=text, relief='flat', padding=8,
+                        font=('Cantarell', 10, 'bold'))
+        for name, color, foreground in (
+            ('Accent', accent, '#0b222a'),
+            ('Ghost', '#29435d', text),
+            ('Danger', '#56394c', '#ffd9df')):
+            style.configure(f'{name}.TButton', background=color, foreground=foreground,
+                            padding=(13, 9), borderwidth=0,
+                            font=('Cantarell', 10, 'bold'))
+            style.map(f'{name}.TButton', background=[('active', '#3d7280')])
 
-        ttk.Label(main, text='1. Выберите раздел Windows',
-                  font=('DejaVu Sans', 13, 'bold')).pack(anchor='w')
-        self.disks = ttk.Treeview(main, columns=('size', 'label'), show='tree headings', height=3)
+        header = tk.Frame(root, bg='#102035', padx=24, pady=18)
+        header.pack(fill='x')
+        tk.Label(header, text='✦', bg='#102035', fg=accent,
+                 font=('DejaVu Sans', 26, 'bold')).pack(side='left', padx=(0, 15))
+        heading = tk.Frame(header, bg='#102035')
+        heading.pack(side='left')
+        tk.Label(heading, text='WINDOWS RESCUE', bg='#102035', fg=text,
+                 font=('Cantarell', 19, 'bold')).pack(anchor='w')
+        tk.Label(heading, text='Локальные учётные записи • восстановление и диагностика',
+                 bg='#102035', fg=muted, font=('Cantarell', 10)).pack(anchor='w')
+        tk.Label(header, text='DEBIAN 13  /  GNOME', bg='#1c3c51', fg=accent,
+                 padx=13, pady=8, font=('Cantarell', 9, 'bold')).pack(side='right')
+        tk.Frame(root, bg=accent, height=3).pack(fill='x')
+
+        book = ttk.Notebook(root, style='Rescue.TNotebook')
+        book.pack(fill='both', expand=True, padx=22, pady=(18, 8))
+        main = tk.Frame(book, bg=bg)
+        debug = tk.Frame(book, bg=bg)
+        book.add(main, text='  ВОССТАНОВЛЕНИЕ  ')
+        book.add(debug, text='  ДИАГНОСТИКА  ')
+
+        disk_card = tk.Frame(main, bg=surface, highlightbackground=border,
+                             highlightthickness=1, padx=18, pady=14)
+        disk_card.pack(fill='x', pady=(0, 12))
+        tk.Label(disk_card, text='01   РАЗДЕЛ WINDOWS', bg=surface, fg=accent,
+                 font=('Cantarell', 12, 'bold')).pack(anchor='w')
+        tk.Label(disk_card, text='Выберите NTFS-раздел с установленной Windows.',
+                 bg=surface, fg=muted, font=('Cantarell', 10)).pack(anchor='w', pady=(2, 7))
+        self.disks = ttk.Treeview(disk_card, columns=('size', 'label'),
+                                  show='tree headings', height=3,
+                                  style='Rescue.Treeview')
         self.disks.heading('#0', text='Раздел')
         self.disks.heading('size', text='Размер')
         self.disks.heading('label', text='Метка')
-        self.disks.pack(fill='x', pady=8)
+        self.disks.column('#0', width=250)
+        self.disks.column('size', width=150)
+        self.disks.pack(fill='x', pady=6)
         self.disks.bind('<<TreeviewSelect>>', self.choose_device)
-        row = ttk.Frame(main)
-        row.pack(fill='x')
-        ttk.Button(row, text='Обновить диски', command=self.refresh_disks).pack(side='left')
-        ttk.Button(row, text='Найти пользователей', command=self.load_users).pack(side='left', padx=8)
+        row = tk.Frame(disk_card, bg=surface)
+        row.pack(fill='x', pady=(7, 0))
+        ttk.Button(row, text='Обновить диски', style='Ghost.TButton',
+                   command=self.refresh_disks).pack(side='left')
+        ttk.Button(row, text='Найти пользователей', style='Accent.TButton',
+                   command=self.load_users).pack(side='left', padx=9)
 
-        ttk.Label(main, text='2. Выберите локальную учётную запись',
-                  font=('DejaVu Sans', 13, 'bold')).pack(anchor='w', pady=(18, 0))
-        self.users = ttk.Treeview(main, columns=('name', 'admin'), show='tree headings', height=6)
+        user_card = tk.Frame(main, bg=surface, highlightbackground=border,
+                             highlightthickness=1, padx=18, pady=14)
+        user_card.pack(fill='both', expand=True, pady=(0, 12))
+        tk.Label(user_card, text='02   УЧЁТНЫЕ ЗАПИСИ', bg=surface, fg=accent,
+                 font=('Cantarell', 12, 'bold')).pack(anchor='w')
+        tk.Label(user_card, text='Проверяйте имя и RID перед любым изменением.',
+                 bg=surface, fg=muted, font=('Cantarell', 10)).pack(anchor='w', pady=(2, 7))
+        self.users = ttk.Treeview(user_card, columns=('name', 'admin'),
+                                  show='tree headings', height=5,
+                                  style='Rescue.Treeview')
         self.users.heading('#0', text='RID')
         self.users.heading('name', text='Имя в SAM')
         self.users.heading('admin', text='Администратор')
-        self.users.column('#0', width=90, stretch=False)
-        self.users.column('name', width=420)
-        self.users.column('admin', width=150, stretch=False)
-        self.users.pack(fill='both', expand=True, pady=8)
-        ttk.Label(main, text='Кириллические имена читаются из реестра; RID позволяет точно выбрать запись.').pack(anchor='w')
-        actions = ttk.Frame(main)
-        actions.pack(fill='x', pady=12)
+        self.users.column('#0', width=100, stretch=False)
+        self.users.column('name', width=400)
+        self.users.column('admin', width=160, stretch=False)
+        self.users.pack(fill='both', expand=True, pady=6)
+        actions = tk.Frame(user_card, bg=surface)
+        actions.pack(fill='x', pady=(9, 0))
         ttk.Button(actions, text='Сделать администратором',
-                   command=lambda: self.change('promote')).pack(side='left')
+                   style='Accent.TButton', command=lambda: self.change('promote')).pack(side='left')
         ttk.Button(actions, text='Разблокировать',
-                   command=lambda: self.change('unlock')).pack(side='left', padx=8)
+                   style='Ghost.TButton', command=lambda: self.change('unlock')).pack(side='left', padx=7)
         ttk.Button(actions, text='Очистить пароль',
-                   command=lambda: self.change('clear')).pack(side='left')
+                   style='Ghost.TButton', command=lambda: self.change('clear')).pack(side='left')
         ttk.Button(actions, text='Снять права администратора',
-                   command=lambda: self.change('demote')).pack(side='left', padx=8)
-        windows_actions = ttk.Frame(main)
-        windows_actions.pack(fill='x', pady=(0, 8))
+                   style='Danger.TButton', command=lambda: self.change('demote')).pack(side='left', padx=7)
+        windows_actions = tk.Frame(main, bg=surface, highlightbackground=border,
+                                    highlightthickness=1, padx=18, pady=12)
+        windows_actions.pack(fill='x')
         ttk.Button(windows_actions, text='Подготовить помощник Windows',
-                   command=self.prepare_windows_helper).pack(side='left')
-        ttk.Label(windows_actions, text='Пароль, новый пользователь и обои — после входа в Windows.').pack(side='left', padx=8)
-        ttk.Label(main, text='Работает с локальными учётными записями. Раздел BitLocker необходимо разблокировать отдельно.').pack(anchor='w')
-        ttk.Label(main, textvariable=self.status, wraplength=830).pack(anchor='w', pady=(12, 0))
+                   style='Ghost.TButton', command=self.prepare_windows_helper).pack(side='left')
+        tk.Label(windows_actions, text='Смена пароля, новый пользователь и обои — после входа в Windows.',
+                 bg=surface, fg=muted, font=('Cantarell', 10)).pack(side='left', padx=15)
 
-        ttk.Label(debug, text='Диагностика текущего сеанса (хранится в памяти до выключения)',
-                  font=('DejaVu Sans', 12, 'bold')).pack(anchor='w')
-        ttk.Label(debug, text='Отчёт содержит названия дисков и учётных записей; перед отправкой проверьте его.').pack(anchor='w', pady=(5, 8))
-        self.log_text = tk.Text(debug, wrap='none', state='disabled')
+        debug_card = tk.Frame(debug, bg=surface, highlightbackground=border,
+                              highlightthickness=1, padx=18, pady=16)
+        debug_card.pack(fill='both', expand=True)
+        tk.Label(debug_card, text='ЖУРНАЛ СЕАНСА', bg=surface, fg=accent,
+                 font=('Cantarell', 13, 'bold')).pack(anchor='w')
+        tk.Label(debug_card, text='До сохранения журнал находится только в памяти. Проверьте имена дисков и пользователей перед отправкой.',
+                 bg=surface, fg=muted, font=('Cantarell', 10)).pack(anchor='w', pady=(3, 12))
+        self.log_text = tk.Text(debug_card, wrap='none', state='disabled',
+                                bg='#0a1727', fg=text, insertbackground=accent,
+                                relief='flat', padx=12, pady=12,
+                                font=('DejaVu Sans Mono', 9))
         self.log_text.pack(fill='both', expand=True)
-        debug_buttons = ttk.Frame(debug)
-        debug_buttons.pack(fill='x', pady=8)
-        ttk.Button(debug_buttons, text='Обновить журнал', command=self.show_log).pack(side='left')
-        ttk.Button(debug_buttons, text='Сохранить отчёт…', command=self.export_log).pack(side='left', padx=8)
+        debug_buttons = tk.Frame(debug_card, bg=surface)
+        debug_buttons.pack(fill='x', pady=(12, 0))
+        ttk.Button(debug_buttons, text='Обновить журнал', style='Ghost.TButton',
+                   command=self.show_log).pack(side='left')
+        ttk.Button(debug_buttons, text='Сохранить отчёт…', style='Accent.TButton',
+                   command=self.export_log).pack(side='left', padx=9)
+
+        footer = tk.Frame(root, bg='#102035', padx=24, pady=11)
+        footer.pack(fill='x')
+        tk.Label(footer, text='●', bg='#102035', fg=accent,
+                 font=('Cantarell', 11)).pack(side='left')
+        tk.Label(footer, textvariable=self.status, bg='#102035', fg=text,
+                 wraplength=790, font=('Cantarell', 10)).pack(side='left', padx=8)
+        tk.Label(footer, text='Локальные записи  •  BitLocker разблокируется отдельно',
+                 bg='#102035', fg=muted, font=('Cantarell', 9)).pack(side='right')
         self.refresh_disks()
 
     def task(self, label, work, done=None):
@@ -400,8 +477,5 @@ if __name__ == '__main__':
     if os.geteuid() != 0:
         raise SystemExit('rescue-gui must run as root')
     window = tk.Tk()
-    style = ttk.Style(window)
-    if 'clam' in style.theme_names():
-        style.theme_use('clam')
     RescueGUI(window)
     window.mainloop()

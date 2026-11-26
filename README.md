@@ -1,10 +1,10 @@
 # chntpw USB
 
-Debian 13 (trixie) Live ISO for working with local Windows accounts using `chntpw` and `ntfs-3g`. Lightweight Openbox desktop, amd64, hybrid ISO for USB with BIOS and UEFI bootloaders. Secure Boot support depends on availability of Debian signed boot packages during the build and must be checked on the target machine.
+Debian 13 (trixie) Live ISO for working with local Windows accounts using `chntpw` and `ntfs-3g`. GNOME desktop with a dark Windows Rescue interface; Openbox remains available as a fallback session. The amd64 hybrid ISO supports BIOS and UEFI bootloaders. Secure Boot support depends on availability of Debian signed boot packages during the build and must be checked on the target machine.
 
 Этот репозиторий содержит исходники и инструкции. Готовый ISO доступен во вкладке [Releases](https://github.com/danilasuv/chntpw-usb/releases), поскольку GitHub не допускает образ такого размера в обычном Git. Rufus в репозиторий не входит. Для пересборки ISO нужны Debian 13, пакеты из раздела **Build** и доступ к пакетам Debian.
 
-**Образ пересобран 20.11.2026:** в нём исправлена функция закрепления обоев, которая раньше могла сбрасывать параметры рабочего стола и шрифтов Windows. Также добавлена настройка LightDM `logind-check-graphical=false`, проверенная на компьютере пользователя. Старая флэшка сохраняет прежний образ до повторной записи ISO.
+**Образ v1.0.0 от 20.11.2026** использует Openbox. В исходниках после этого релиза GNOME назначен основным рабочим столом; новую версию ISO нужно собрать и проверить перед записью на флэшку. Исправление LightDM `logind-check-graphical=false` сохранено.
 
 ## Быстрый запуск
 
@@ -19,6 +19,8 @@ Debian 13 (trixie) Live ISO for working with local Windows accounts using `chntp
 ## Build
 
 Use a Debian 13 amd64 machine or VM with internet access. Install `live-build`, `dosfstools`, `mtools`, and `xorriso` (`sudo apt update && sudo apt install live-build dosfstools mtools xorriso`), then run `sudo sh build.sh` from this directory. The result is `live-image-amd64.hybrid.iso` plus a `.sha256` checksum. The build appends a 500 MiB FAT32 partition labeled `WALLPAPERS`. Building requires root, disk space, and package downloads. Do not build inside this source folder if it is on a filesystem that lacks Linux permissions and symlinks; copy it to an ext4 filesystem first.
+
+For a cloud build, run the **Build rescue ISO** workflow in GitHub Actions. It builds in a Debian 13 container and uploads the ISO and checksum as a temporary workflow artifact. The GNOME edition needs more memory and graphics capability than the previous Openbox image; use at least 4 GiB RAM and enable 3D acceleration in a test VM when available.
 
 ## Use
 

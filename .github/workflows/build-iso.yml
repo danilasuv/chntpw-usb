@@ -1,0 +1,38 @@
+name: Build rescue ISO
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build in Debian 13
+        run: |
+          docker run --rm --privileged --network host \
+            --mount type=bind,src="$PWD",dst=/src -w /src debian:trixie \
+            sh -ec 'apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends live-build dosfstools mtools xorriso; sh build.sh'
+
+      - name: Check ISO and checksum
+        run: |
+          test -s live-image-amd64.hybrid.iso
+          sha256sum --check live-image-amd64.hybrid.iso.sha256
+          file live-image-amd64.hybrid.iso
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rescue-gnome-iso
+          path: |
+            live-image-amd64.hybrid.iso
+            live-image-amd64.hybrid.iso.sha256
+          compression-level: 1
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Windows Rescue
+Comment=Local Windows account recovery
+Exec=/usr/local/bin/start-rescue-gui
+Icon=windows-rescue
+Categories=System;Utility;
+Terminal=false

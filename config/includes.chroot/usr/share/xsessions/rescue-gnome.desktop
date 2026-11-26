@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Windows Rescue (GNOME)
+Comment=GNOME desktop for Windows rescue
+Exec=gnome-session --session=gnome
+TryExec=gnome-session
+Type=Application
+DesktopNames=GNOME

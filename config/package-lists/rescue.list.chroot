@@ -10,6 +10,17 @@ xorg
 openbox
 lightdm
 lightdm-gtk-greeter
+gnome-session
+gnome-session-xsession
+gnome-shell
+gnome-settings-daemon
+gnome-control-center
+gnome-terminal
+nautilus
+dbus-user-session
+libgl1-mesa-dri
+adwaita-icon-theme
+fonts-cantarell
 python3-tk
 python3-hivex
 fonts-dejavu-core
